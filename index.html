@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <title>Daily Inventory</title>
+  <style>
+    <style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0,auto;
+  }
+  h1 {
+    text-align: center;
+  }
+  .header-section {
+    margin-bottom: 10px;
+  }
+  .header-section label {
+    font-weight: bold;
+  }
+  .header-section input {
+    margin-left: 10px;
+    margin-bottom: 10px;
+  }
+  table {
+    width: 90%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  table, th, td {
+    border: 1px solid #ddd;
+  }
+  th, td {
+    padding: 8px;
+    text-align: center;
+  }
+  th {
+    background-color: #f4f4f4;
+  }
+  button {
+    float: center;
+    margin-top: 10px;
+    padding: 6px 12px;
+    background-color: #157012;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    width: 90%;
+  }
+  button:hover {
+    background-color: #0056b3;
+  }
+  </style>
+</head>
+<body>
+  <h1>Daily Inventory</h1>
+  <div>
+    <th for="companyName">Company Name:</th>
+    <th><input type="text" id="companyName" placeholder="Enter company name"></th>
+    <th for="day">Day:</th>
+    <th><input type="text" id="day" placeholder="Enter day"></th>
+    <th for="date">Date:</th>
+    <th><input type="date" id="date"></th>
+  </div>
+  <table id="inventoryTable">
+    <thead>
+      <tr>
+        <th style="background-color: #3e81d8;">NO</th>
+        <th style="background-color: #3e81d8;" >Item</th>
+        <th style="background-color: #3e81d8;">Price</th>
+        <th style="background-color: #3e81d8;">OS</th>
+        <th style="background-color: #3e81d8;">In</th>
+        <th style="background-color: #3e81d8;">Out</th>
+        <th style="background-color: #3e81d8;">LS</th>
+        <th style="background-color: #3e81d8;">Unit</th>
+        <th style="background-color: #3e81d8;">Total Price</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+  <button id="addRowButton">Add Row</button>
+  <button type="button" onclick="downloadTableAsPDF()">Download PDF</button>
+  <script>
+    document.getElementById("addRowButton").addEventListener("click", addRow);
+    function addRow() {
+  const tableBody = document.getElementById("inventoryTable").querySelector("tbody");
+
+  if (tableBody.rows.length >= 10) {
+    alert("You can only add a maximum of 10 rows.");
+    return; // Hentikan fungsi jika mencapai batas maksimum
+  }
+  
+  const row = tableBody.insertRow();
+  row.innerHTML = `
+   <td style="width: 50px; hight: 20px; padding:">${tableBody.rows.length + 0}</td>
+   <td><input type="text" placeholder="" style="width: 150px;"></td>
+   <td><input type="number" class="price" placeholder="" style="width: 100px;" oninput="updateTotalPrice(this)"></td>
+   <td><input type="number" class="stock" placeholder="" style="width: 60px;" oninput="updateLastStock(this)"></td>
+   <td><input type="number" class="stockIn" placeholder="" style="width: 60px;" oninput="updateLastStock(this)"></td>
+   <td><input type="number" class="stockOut" placeholder="" style="width: 60px;" oninput="updateLastStock(this)"></td>
+   <td><input type="number" class="lastStock" placeholder="" style="width: 60px;" readonly></td>
+   <td><input type="text" class="unit" placeholder="" style="width: 80px;"></td>
+   <td><input type="text" class="totalPrice currency" value="" style="width: 100px;" readonly></td>
+  `;
+}
+
+    function deleteRow(button) {
+      const row = button.parentNode.parentNode;
+      row.parentNode.removeChild(row);
+      updateRowNumbers();
+    }
+
+    function updateRowNumbers() {
+      const tableBody = document.getElementById("inventoryTable").querySelector("tbody");
+      for (let i = 0; i < tableBody.rows.length; i++) {
+        tableBody.rows[i].cells[0].innerText = i + 1;
+      }
+    }
+
+    function updateLastStock(input) {
+      const row = input.parentNode.parentNode;
+      const openStock = parseInt(row.querySelector(".stock").value) || 0;
+      const stockIn = parseInt(row.querySelector(".stockIn").value) || 0;
+      const stockOut = parseInt(row.querySelector(".stockOut").value) || 0;
+
+      const lastStock = openStock + stockIn - stockOut;
+      row.querySelector(".lastStock").value = lastStock;
+
+      updateTotalPrice(row.querySelector(".price"));
+    }
+
+    function updateTotalPrice(priceInput) {
+      const row = priceInput.parentNode.parentNode;
+      const price = parseFloat(priceInput.value) || 0;
+      const lastStock = parseInt(row.querySelector(".lastStock").value) || 0;
+
+      const totalPrice = price * lastStock;
+      row.querySelector(".totalPrice").value = totalPrice.toLocaleString("id-ID");
+    }
+
+    function downloadTableAsPDF() {
+  const table = document.getElementById('inventoryTable');
+  const companyName = document.getElementById('companyName').value;
+  const day = document.getElementById('day').value;
+  const date = document.getElementById('date').value;
+
+  // Buat salinan tabel untuk PDF
+  const clonedTable = table.cloneNode(true);
+
+  // Konversi input ke teks di salinan tabel
+  Array.from(clonedTable.querySelectorAll("input")).forEach(input => {
+    const cell = input.parentNode;
+    const text = document.createTextNode(input.value || ""); // Ambil nilai input
+    cell.removeChild(input); // Hapus input
+    cell.appendChild(text); // Ganti dengan teks
+  });
+
+  // Tambahkan header (judul, nama perusahaan, hari, dan tanggal)
+  const pdfContainer = document.createElement("div");
+  pdfContainer.innerHTML = `
+    <h1 style="text-align: center;">Daily Inventory</h1>
+    <p><strong>Company Name:</strong> ${companyName}</p>
+    <p><strong>Day:</strong> ${day}</p>
+    <p><strong>Date:</strong> ${date}</p>
+  `;
+  pdfContainer.appendChild(clonedTable);
+
+  // Konfigurasi dan download PDF
+  const options = {
+    margin: 1,
+    filename: 'daily_inventory.pdf',
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+  };
+
+  html2pdf().from(pdfContainer).set(options).save();
+}
+  </script>
+</body>
+</html>
