@@ -3,122 +3,130 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
   <title>Daily Inventory</title>
   <style>
-    <style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0,auto;
-  }
-  h1 {
-    text-align: center;
-  }
-  .header-section {
-    margin-bottom: 10px;
-  }
-  .header-section label {
-    font-weight: bold;
-  }
-  .header-section input {
-    margin-left: 10px;
-    margin-bottom: 10px;
-  }
-  table {
-    width: 90%;
-    border-collapse: collapse;
-    margin-top: 10px;
-  }
-  table, th, td {
-    border: 1px solid #ddd;
-  }
-  th, td {
-    padding: 8px;
-    text-align: center;
-  }
-  th {
-    background-color: #f4f4f4;
-  }
-  button {
-    float: center;
-    margin-top: 10px;
-    padding: 6px 12px;
-    background-color: #157012;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    width: 90%;
-  }
-  button:hover {
-    background-color: #0056b3;
-  }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0 auto;
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+    }
+    .header-section {
+      margin-bottom: 10px;
+    }
+    .header-section label {
+      font-weight: bold;
+    }
+    .header-section input {
+      margin-left: 10px;
+      margin-bottom: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+    th, td {
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    button {
+      margin: 10px auto;
+      display: block;
+      padding: 8px 16px;
+      background-color: #157012;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    @media print {
+      button {
+        display: none; /* Sembunyikan tombol saat dicetak */
+      }
+    }
   </style>
 </head>
 <body>
   <h1>Daily Inventory</h1>
-  <div>
-    <th for="companyName">Company Name:</th>
-    <th><input type="text" id="companyName" placeholder="Enter company name"></th>
-    <th for="day">Day:</th>
-    <th><input type="text" id="day" placeholder="Enter day"></th>
-    <th for="date">Date:</th>
-    <th><input type="date" id="date"></th>
+  <div class="header-section">
+    <label for="companyName">Company Name:</label>
+    <input type="text" id="companyName" placeholder="">
+    <label for="day">Day:</label>
+    <input type="text" id="day" placeholder="" style="width: 80px;">
+    <label for="date">Date:</label>
+    <input type="date" id="date">
   </div>
   <table id="inventoryTable">
     <thead>
       <tr>
-        <th style="background-color: #3e81d8;">NO</th>
-        <th style="background-color: #3e81d8;" >Item</th>
-        <th style="background-color: #3e81d8;">Price</th>
-        <th style="background-color: #3e81d8;">OS</th>
-        <th style="background-color: #3e81d8;">In</th>
-        <th style="background-color: #3e81d8;">Out</th>
-        <th style="background-color: #3e81d8;">LS</th>
-        <th style="background-color: #3e81d8;">Unit</th>
-        <th style="background-color: #3e81d8;">Total Price</th>
+        <th>NO</th>
+        <th>Item</th>
+        <th>Price</th>
+        <th>OS</th>
+        <th>In</th>
+        <th>Out</th>
+        <th>LS</th>
+        <th>Unit</th>
+        <th>Total Price</th>
       </tr>
     </thead>
     <tbody>
     </tbody>
   </table>
-  <button id="addRowButton">Add Row</button>
-  <button type="button" onclick="downloadTableAsPDF()">Download PDF</button>
+  <button id="addRowButton">Add Row/Table</button>
+  <button onclick="window.print()">Download PDF</button>
+
   <script>
     document.getElementById("addRowButton").addEventListener("click", addRow);
+
     function addRow() {
-  const tableBody = document.getElementById("inventoryTable").querySelector("tbody");
-
-  if (tableBody.rows.length >= 10) {
-    alert("You can only add a maximum of 10 rows.");
-    return; // Hentikan fungsi jika mencapai batas maksimum
-  }
-  
-  const row = tableBody.insertRow();
-  row.innerHTML = `
-   <td style="width: 50px; hight: 20px; padding:">${tableBody.rows.length + 0}</td>
-   <td><input type="text" placeholder="" style="width: 150px;"></td>
-   <td><input type="number" class="price" placeholder="" style="width: 100px;" oninput="updateTotalPrice(this)"></td>
-   <td><input type="number" class="stock" placeholder="" style="width: 60px;" oninput="updateLastStock(this)"></td>
-   <td><input type="number" class="stockIn" placeholder="" style="width: 60px;" oninput="updateLastStock(this)"></td>
-   <td><input type="number" class="stockOut" placeholder="" style="width: 60px;" oninput="updateLastStock(this)"></td>
-   <td><input type="number" class="lastStock" placeholder="" style="width: 60px;" readonly></td>
-   <td><input type="text" class="unit" placeholder="" style="width: 80px;"></td>
-   <td><input type="text" class="totalPrice currency" value="" style="width: 100px;" readonly></td>
-  `;
-}
-
-    function deleteRow(button) {
-      const row = button.parentNode.parentNode;
-      row.parentNode.removeChild(row);
-      updateRowNumbers();
-    }
-
-    function updateRowNumbers() {
       const tableBody = document.getElementById("inventoryTable").querySelector("tbody");
-      for (let i = 0; i < tableBody.rows.length; i++) {
-        tableBody.rows[i].cells[0].innerText = i + 1;
+
+      if (tableBody.rows.length >= 250) {
+        alert("You can only add a maximum of 250 rows.");
+        return;
       }
+
+      const row = tableBody.insertRow();
+      row.innerHTML = `
+       <td style="width: 10px; padding: 4px;">${tableBody.rows.length + 0}</td>
+       <td style="width: 100px; padding: 4px;">
+       <input type="text" placeholder="" style="width: 90%; font-size: 12px; padding: 2px;">
+       </td>
+       <td style="width: 70px; padding: 4px;">
+       <input type="number" class="price" oninput="updateTotalPrice(this)" style="width: 90%; font-size: 12px; padding: 2px;">
+       </td>
+       <td style="width: 30px; padding: 4px;">
+       <input type="number" class="stock" oninput="updateLastStock(this)" style="width: 90%; font-size: 12px; padding: 2px;">
+       </td>
+       <td style="width: 30px; padding: 4px;">
+       <input type="number" class="stockIn" oninput="updateLastStock(this)" style="width: 90%; font-size: 12px; padding: 2px;">
+       </td>
+       <td style="width: 30px; padding: 4px;">
+       <input type="number" class="stockOut" oninput="updateLastStock(this)" style="width: 90%; font-size: 12px; padding: 2px;">
+       </td>
+       <td style="width: 30px; padding: 4px;">
+       <input type="number" class="lastStock" readonly style="width: 90%; font-size: 12px; padding: 2px;">
+       </td>
+       <td style="width: 30px; padding: 4px;">
+       <input type="text" class="unit" style="width: 90%; font-size: 12px; padding: 2px;">
+       </td>
+       <td style="width: 80px; padding: 4px;">
+       <input type="text" class="totalPrice" readonly style="width: 90%; font-size: 12px; padding: 2px;">
+       </td>
+      `;
     }
 
     function updateLastStock(input) {
@@ -141,44 +149,6 @@
       const totalPrice = price * lastStock;
       row.querySelector(".totalPrice").value = totalPrice.toLocaleString("id-ID");
     }
-
-    function downloadTableAsPDF() {
-  const table = document.getElementById('inventoryTable');
-  const companyName = document.getElementById('companyName').value;
-  const day = document.getElementById('day').value;
-  const date = document.getElementById('date').value;
-
-  // Buat salinan tabel untuk PDF
-  const clonedTable = table.cloneNode(true);
-
-  // Konversi input ke teks di salinan tabel
-  Array.from(clonedTable.querySelectorAll("input")).forEach(input => {
-    const cell = input.parentNode;
-    const text = document.createTextNode(input.value || ""); // Ambil nilai input
-    cell.removeChild(input); // Hapus input
-    cell.appendChild(text); // Ganti dengan teks
-  });
-
-  // Tambahkan header (judul, nama perusahaan, hari, dan tanggal)
-  const pdfContainer = document.createElement("div");
-  pdfContainer.innerHTML = `
-    <h1 style="text-align: center;">Daily Inventory</h1>
-    <p><strong>Company Name:</strong> ${companyName}</p>
-    <p><strong>Day:</strong> ${day}</p>
-    <p><strong>Date:</strong> ${date}</p>
-  `;
-  pdfContainer.appendChild(clonedTable);
-
-  // Konfigurasi dan download PDF
-  const options = {
-    margin: 1,
-    filename: 'daily_inventory.pdf',
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-  };
-
-  html2pdf().from(pdfContainer).set(options).save();
-}
   </script>
 </body>
 </html>
